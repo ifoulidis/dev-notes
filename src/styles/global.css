@@ -1,0 +1,80 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+/* Class-based dark mode: an inline script in BaseLayout.astro sets `.dark` on <html> before first paint. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* `--font-gentium` is defined by Astro's fonts config (astro.config.ts) via <Font />. */
+  --font-book: var(--font-gentium), Georgia, 'Times New Roman', serif;
+  --text-article-title: 2.5rem;
+  --text-article-body: 1.2rem;
+  --text-article-h1: 1.7rem;
+  --text-article-h2: 1.4rem;
+  --text-article-h3: 1.2rem;
+  --leading-heading: 1.1;
+
+  /* The accent: fills, bars and highlights, and link text in dark mode. */
+  --color-accent: oklch(0.7 0.18 245);
+  /* The accent darkened for text on light backgrounds, where the full accent is too pale to read. */
+  --color-accent-deep: oklch(0.5 0.18 245);
+  /* The accent lightened: hovered fills, and hovered links in dark mode. */
+  --color-accent-soft: oklch(0.82 0.11 245);
+  /* Near-black with a hint of the accent's hue, for text on accent fills. */
+  --color-night: oklch(0.2 0.02 245);
+}
+
+/* Opening and closing <details> (revealing buttons, table of contents) slides instead of jumping. */
+@media (prefers-reduced-motion: no-preference) {
+  :root {
+    interpolate-size: allow-keywords;
+  }
+  details::details-content {
+    height: 0;
+    overflow: clip;
+    transition:
+      height 0.3s ease,
+      content-visibility 0.3s allow-discrete;
+  }
+  details[open]::details-content {
+    height: auto;
+  }
+}
+
+/*
+ * Post bodies: blocks scale in as they scroll into view. Progressive enhancement: browsers without
+ * scroll-driven animations just show them.
+ */
+@keyframes scale-in {
+  from {
+    opacity: 0.4;
+    scale: 0.85;
+  }
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .scroll-reveal :is(p, li, blockquote, h1, h2, h3, h4, h5) {
+      animation: scale-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 60%;
+    }
+  }
+}
+
+/*
+ * The typography plugin adds quote marks around blockquotes and backticks around inline code with CSS.
+ * Those would show text the content doesn't contain, so they are removed.
+ */
+.prose :where(blockquote p:first-of-type)::before,
+.prose :where(blockquote p:last-of-type)::after,
+.prose :where(code)::before,
+.prose :where(code)::after {
+  content: none;
+}
+
+/* Shiki's light colours are inline styles, so its dark ones need `!important` to win. */
+.dark .astro-code,
+.dark .astro-code span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+}

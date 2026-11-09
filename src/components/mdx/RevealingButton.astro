@@ -1,0 +1,35 @@
+---
+/**
+ * Collapsible section used in posts (`<RevealingButton title="References">`). The summary shows the title
+ * when closed and "Hide" when open.
+ */
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<details class="group my-4">
+  <summary
+    class="inline-flex cursor-pointer list-none items-center gap-1 py-1 font-bold text-accent-deep hover:text-accent dark:text-accent dark:hover:text-accent-soft [&::-webkit-details-marker]:hidden"
+  >
+    <span class="group-open:hidden">{title}</span>
+    <span class="hidden group-open:inline">Hide</span>
+    <svg viewBox="0 0 24 24" class="size-5 transition-transform group-open:rotate-180" fill="currentColor" aria-hidden="true">
+      <path d="M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z"></path>
+    </svg>
+  </summary>
+  <!--
+    The opening animation clips the details' content (`overflow: clip` in global.css), which would cut off the
+    card's shadow, so this wrapper leaves room for it.
+  -->
+  <div class="-mx-2 px-2 pt-2 pb-3">
+    <!-- The content's own outer margins are trimmed so the padding sets the spacing. -->
+    <div
+      class="rounded-lg border border-l-4 border-neutral-200 border-l-accent bg-neutral-50 px-5 py-4 shadow-md dark:border-neutral-700 dark:border-l-accent dark:bg-neutral-900 [&>:first-child]:mt-0 [&>:last-child]:mb-0"
+    >
+      <slot />
+    </div>
+  </div>
+</details>

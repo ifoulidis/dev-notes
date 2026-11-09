@@ -1,0 +1,28 @@
+---
+title: Date time madness
+description: Date times are a headache
+date: 2026-11-01
+draft: false
+---
+
+# Filtering data using a date range from the client
+
+The easiest way to do this is to require calculated datetimes from the front end. The front end should get the start of the first day and the _start of the day after the last day_ using date-fns, which will operate in the local timezone, and then send the ISO string versions of those.
+
+- If we were to do it on the server, we would need the client's timezone, which we might not have. We would also have to create TZDateMini instances to work out the start and end times.
+  We can require a UTC string using `z.iso.datetime()`. It requires `Z`; it cannot be 'local', and it does not allow offsets, meaning non-UTC times. (We can also just allow offsets.)
+
+```javascript
+const datetime = z.iso.datetime();
+
+datetime.parse("2020-01-01T06:15:00Z"); // ✅
+datetime.parse("2020-01-01T06:15:00.123Z"); // ✅
+datetime.parse("2020-01-01T06:15:00.123456Z"); // ✅ (arbitrary precision)
+datetime.parse("2020-01-01T06:15:00+02:00"); // ❌ (offsets not allowed)
+datetime.parse("2020-01-01T06:15:00"); // ❌ (local not allowed)
+```
+
+- We cannot allow no offset, or we will infer UTC most likely, and be off by 12 or 13 hours if the datetime was local to NZ.
+- Filter using `lt` for the end, and require an exclusive end datetime. This ensures that a lack of precision won't exclude any values.
+- If you send the end of the last day (`23:59:59.999`) and filter with `lte`, anything stored between `.999` and midnight is missed (Postgres keeps microseconds). With the exclusive end, the same code works for weeks and months.
+- A start of and hour/minute/second always just works, because if it needs to be more precise, zeros are always added.

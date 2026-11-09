@@ -1,0 +1,51 @@
+---
+import { Font } from 'astro:assets';
+import ThemeToggle from '@/components/ThemeToggle.astro';
+import { SITE_TITLE } from '@/consts';
+import '@/styles/global.css';
+
+interface Props {
+  /** Page title; the site title is appended. Omit on the home page. */
+  title?: string | undefined;
+  description?: string | undefined;
+}
+
+const { title, description = 'Notes on what I’m building and learning.' } = Astro.props;
+const fullTitle = title === undefined ? SITE_TITLE : `${title} | ${SITE_TITLE}`;
+---
+
+<!doctype html>
+<html lang="en-NZ">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <Font cssVariable="--font-gentium" preload />
+    <!-- Before first paint, so the page never flashes the wrong theme. A saved choice beats the system setting. -->
+    <script is:inline>
+      let saved = null;
+      try {
+        saved = localStorage.getItem('theme');
+      } catch {
+        // Storage unavailable (e.g. blocked): follow the system setting.
+      }
+      const dark = saved === null ? matchMedia('(prefers-color-scheme: dark)').matches : saved === 'dark';
+      document.documentElement.classList.toggle('dark', dark);
+    </script>
+  </head>
+  <body class="flex min-h-dvh flex-col bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
+    <header class="border-b-4 border-accent">
+      <nav class="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-4">
+        <a href="/" class="text-xl font-bold transition-colors hover:text-accent-deep dark:hover:text-accent">{SITE_TITLE}</a>
+        <ThemeToggle />
+      </nav>
+    </header>
+    <main class="flex-1">
+      <slot />
+    </main>
+    <footer class="mx-auto w-full max-w-4xl px-4 py-8 text-sm text-neutral-500 dark:text-neutral-400">
+      © {new Date().getFullYear()} Isaiah Foulidis
+    </footer>
+  </body>
+</html>

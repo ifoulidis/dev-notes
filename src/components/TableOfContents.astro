@@ -1,0 +1,49 @@
+---
+import type { MarkdownHeading } from 'astro';
+
+/** Collapsible, sticky table of contents (h1–h3). */
+interface Props {
+  headings: readonly MarkdownHeading[];
+}
+
+/** The deepest heading level listed. */
+const MAX_DEPTH = 3;
+const indent: Record<number, string> = { 1: '', 2: 'pl-4', 3: 'pl-8' };
+
+const items = Astro.props.headings.filter(({ depth }) => depth <= MAX_DEPTH);
+---
+
+{
+  items.length > 0 && (
+    <details
+      data-toc
+      class="group sticky top-2 z-30 mx-auto mb-6 max-w-3xl overflow-hidden rounded-lg bg-white/95 shadow-md backdrop-blur dark:bg-neutral-900/95"
+    >
+      <summary class="flex cursor-pointer list-none items-center gap-2 bg-accent px-4 py-2 text-lg font-bold text-night transition-colors hover:bg-accent-soft group-open:mb-2 [&::-webkit-details-marker]:hidden">
+        <svg viewBox="0 0 24 24" class="size-5 transition-transform group-open:rotate-90" fill="currentColor" aria-hidden="true">
+          <path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z" />
+        </svg>
+        Table of Contents
+      </summary>
+      <ul class="max-h-[60vh] space-y-1 overflow-y-auto px-4 pb-3 text-lg">
+        {items.map(({ depth, slug, text }) => (
+          <li class={indent[depth]}>
+            <a href={`#${slug}`} class="hover:text-accent-deep dark:hover:text-accent">
+              {text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </details>
+  )
+}
+
+<script>
+  // Picking an entry closes the contents again.
+  for (const toc of document.querySelectorAll('details[data-toc]')) {
+    if (!(toc instanceof HTMLDetailsElement)) continue;
+    toc.addEventListener('click', (event) => {
+      if (event.target instanceof Element && event.target.closest('a') !== null) toc.open = false;
+    });
+  }
+</script>

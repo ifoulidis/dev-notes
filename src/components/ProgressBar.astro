@@ -1,0 +1,16 @@
+<!-- Reading progress: a bar across the top of the viewport that fills as the page scrolls. -->
+<div data-progress aria-hidden="true" class="fixed top-0 left-0 z-40 h-1 w-full origin-left bg-accent" style="scale: 0 1"></div>
+
+<script>
+  const bar = document.querySelector<HTMLElement>('[data-progress]');
+  const root = document.documentElement;
+
+  function update() {
+    const scrollable = root.scrollHeight - root.clientHeight;
+    const progress = scrollable > 0 ? root.scrollTop / scrollable : 0;
+    bar?.style.setProperty('scale', `${progress} 1`);
+  }
+
+  update();
+  window.addEventListener('scroll', update, { passive: true });
+</script>
